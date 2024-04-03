@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `location` ADD COLUMN `latitude` FLOAT NOT NULL DEFAULT 0,
+    ADD COLUMN `longitude` FLOAT NOT NULL DEFAULT 0;

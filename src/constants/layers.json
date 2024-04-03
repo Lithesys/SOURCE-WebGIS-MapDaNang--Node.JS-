@@ -1,0 +1,98 @@
+[
+  {
+    "label": "Đà Nẵng",
+    "layer_index": 1,
+    "layer_color": "#40C224",
+    "value": "danang:dn_hn72"
+  },
+  {
+    "label": "Biển",
+    "layer_index": 1,
+    "layer_color": "#FFBA79",
+    "value": "danang:bien_utm"
+  },
+  {
+    "label": "Sông Cẩm Lệ",
+    "layer_index": 1,
+    "layer_color": "#9F3D24",
+    "value": "danang:cam_le__vn_"
+  },
+  {
+    "label": "Sông Đồng Nghệ",
+    "layer_index": 1,
+    "layer_color": "#F852A4",
+    "value": "danang:dong_nghe__vn_"
+  },
+  {
+    "label": "Giao thông",
+    "layer_index": 1,
+    "layer_color": "#7E28C7",
+    "value": "danang:giao_thong_utm"
+  },
+  {
+    "label": "Hồ 3",
+    "layer_index": 1,
+    "layer_color": "#D696EC",
+    "value": "danang:ho3"
+  },
+  {
+    "label": "Hồ 4",
+    "layer_index": 1,
+    "layer_color": "#D696EC",
+    "value": "danang:ho4"
+  },
+  {
+    "label": "Hồ 5",
+    "layer_index": 1,
+    "layer_color": "#D696EC",
+    "value": "danang:ho5"
+  },
+  {
+    "label": "Hồ 6",
+    "layer_index": 1,
+    "layer_color": "#D696EC",
+    "value": "danang:ho6"
+  },
+  {
+    "label": "Hồ 7",
+    "layer_index": 1,
+    "layer_color": "#D696EC",
+    "value": "danang:ho7"
+  },
+  {
+    "label": "Hồ 8",
+    "layer_index": 1,
+    "layer_color": "#D696EC",
+    "value": "danang:ho8"
+  },
+  {
+    "label": "Hồ Cẩm Lệ",
+    "layer_index": 1,
+    "layer_color": "#D696EC",
+    "value": "danang:ho_cl"
+  },
+  {
+    "label": "Hồ Đồng Nghệ",
+    "layer_index": 1,
+    "layer_color": "#D696EC",
+    "value": "danang:ho_dong_nghe"
+  },
+  {
+    "label": "Hồ Hải Châu",
+    "layer_index": 1,
+    "layer_color": "#D696EC",
+    "value": "danang:ho_haichau"
+  },
+  {
+    "label": "Hồ Hòa Trung",
+    "layer_index": 1,
+    "layer_color": "#D696EC",
+    "value": "danang:ho_hoa_trung"
+  },
+  {
+    "label": "Sơ đồ đất",
+    "layer_index": 1,
+    "layer_color": "#D696EC",
+    "value": "danang:polygon"
+  }
+]

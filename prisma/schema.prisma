@@ -1,0 +1,176 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum LayerType {
+  VECTOR_IMAGE_LAYER
+  VECTOR_LAYER
+}
+
+enum FeatureType {
+  EXTERNAL
+  INTERNAL
+}
+
+model User {
+  id       String   @id @default(uuid())
+  email    String   @unique
+  password String   @db.VarChar(32)
+  role     Role     @default(USER)
+  activate Boolean  @default(true)
+  posts    Post[]
+  profile  Profile?
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  createdFeatures Feature[] @relation("FeatureCreated")
+  updatedFeatures Feature[] @relation("FeatureUpdated")
+
+  createdLayers MapLayer[] @relation("LayerCreated")
+  updatedLayers MapLayer[] @relation("LayerUpdated")
+
+  createdProjections Projection[] @relation("ProjectionCreated")
+  updatedProjections Projection[] @relation("ProjectionUpdated")
+
+  createdLocations Location[] @relation("LocationCreated")
+  updatedLocations Location[] @relation("LocationUpdated")
+
+  @@fulltext([email])
+  @@fulltext([email, password])
+}
+
+model Profile {
+  id          String    @id @default(uuid())
+  sub         String?
+  email       String    @unique
+  name        String?
+  given_name  String?
+  family_name String?
+  birthday    DateTime?
+  gender      Gender?
+  address     String?
+  picture     String?    @db.LongText
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String    @unique
+
+  @@fulltext([name, email])
+}
+
+model Post {
+  id        Int     @id @default(autoincrement())
+  title     String
+  content   String?
+  published Boolean @default(false)
+  author    User    @relation(fields: [authorId], references: [id])
+  authorId  String
+}
+
+model Location {
+  id          Int    @id @default(autoincrement())
+  name        String @unique
+  description String @db.LongText
+  workspace   String
+
+  mapLayers MapLayer[]
+  view      MapView?
+
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @updatedAt
+  createdBy   User?     @relation("LocationCreated", fields: [createdById], references: [id])
+  createdById String?
+  updatedBy   User?     @relation("LocationUpdated", fields: [updatedById], references: [id])
+  updatedById String?
+
+  @@fulltext([name])
+  @@fulltext([name, description])
+}
+
+model MapView {
+  id           Int         @id @default(autoincrement())
+  projectionId Int?
+  projection   Projection? @relation(fields: [projectionId], references: [id])
+  zoom         Float       @default(10) @db.Float
+  maxZoom      Float       @default(18) @db.Float
+  longitude    Float       @default(0) @db.Float
+  latitude     Float       @default(0) @db.Float
+  extent       String      @db.LongText
+  location     Location    @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  locationId   Int         @unique
+}
+
+model Projection {
+  id         Int       @id @default(autoincrement())
+  name       String    @unique
+  definition String    @db.LongText
+  mapViews   MapView[]
+
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @updatedAt
+  createdBy   User?     @relation("ProjectionCreated", fields: [createdById], references: [id])
+  createdById String?
+  updatedBy   User?     @relation("ProjectionUpdated", fields: [updatedById], references: [id])
+  updatedById String?
+
+  @@fulltext([name])
+}
+
+model MapLayer {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  url         String    @db.LongText
+  type        LayerType @default(VECTOR_IMAGE_LAYER)
+
+  location   Location? @relation(fields: [locationId], references: [id], onDelete: NoAction)
+  locationId Int?
+
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @updatedAt
+  createdBy   User?     @relation("LayerCreated", fields: [createdById], references: [id])
+  createdById String?
+  updatedBy   User?     @relation("LayerUpdated", fields: [updatedById], references: [id])
+  updatedById String?
+  Feature     Feature[]
+
+  @@fulltext([name, description])
+}
+
+model Feature {
+  id         String      @id @default(uuid())
+  name       String      @unique
+  properties String?     @db.LongText
+  type       FeatureType @default(INTERNAL)
+
+  layer   MapLayer? @relation(fields: [layerId], references: [id], onDelete: Cascade)
+  layerId Int?
+
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @default(now()) @updatedAt
+  createdBy   User?     @relation("FeatureCreated", fields: [createdById], references: [id])
+  createdById String?
+  updatedBy   User?     @relation("FeatureUpdated", fields: [updatedById], references: [id])
+  updatedById String?
+
+  @@fulltext([name])
+}

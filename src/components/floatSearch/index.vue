@@ -1,18 +1,33 @@
 <template>
   <div style="display: flex; flex-direction: row; gap: 10px; max-height: 56px">
     <q-btn class="bg-secondary text-white" rounded icon="public" @click="backToWorldMap">
-      <q-tooltip>{{ $t("Back to world map") }}</q-tooltip>
+      <q-tooltip>{{ $t('Back to world map') }}</q-tooltip>
     </q-btn>
-    <q-select class="searchClass shadow-10" ref="locationSearchRef" v-model="searchLocation" rounded outlined
-      bg-color="white" color="secondary" use-input hide-dropdown-icon input-debounce="400" :label="$t('Select location')"
-      option-label="name" option-value="name" :options="options" @filter="filterFn" @update:model-value="setModel">
+    <q-select
+      class="searchClass shadow-10"
+      ref="locationSearchRef"
+      v-model="searchLocation"
+      rounded
+      outlined
+      bg-color="white"
+      color="secondary"
+      use-input
+      hide-dropdown-icon
+      input-debounce="400"
+      :label="$t('Select location')"
+      option-label="name"
+      option-value="name"
+      :options="options"
+      @filter="filterFn"
+      @update:model-value="setModel"
+    >
       <template v-slot:append>
         <q-icon name="search" color="secondary" />
       </template>
       <template v-slot:no-option>
         <q-item>
           <q-item-section class="text-grey">
-            {{ $t("No results") }}
+            {{ $t('No results') }}
           </q-item-section>
         </q-item>
       </template>
@@ -31,39 +46,36 @@ import {
   onUnmounted,
   watch,
   provide,
-  inject,
-} from "vue";
-import { useQuasar } from "quasar";
-import { $bus } from "boot/bus.js";
-import { i18n } from "boot/i18n.js";
-import _difference from "lodash/difference";
+  inject
+} from 'vue';
+import { useQuasar } from 'quasar';
+import { $bus } from 'boot/bus.js';
+import { i18n } from 'boot/i18n.js';
+import _difference from 'lodash/difference';
 
-import { Map, View } from "ol";
-import proj4 from "proj4";
-import { register, fromEPSGCode } from "ol/proj/proj4";
-import { transformExtent } from "ol/proj";
+import { Map, View } from 'ol';
+import proj4 from 'proj4';
+import { register, fromEPSGCode } from 'ol/proj/proj4';
+import { transformExtent } from 'ol/proj';
 
-import { transformProjection } from "src/utils/openLayers.js";
-import {
-  Vector as VectorLayer,
-  VectorImage as VectorImageLayer,
-} from "ol/layer";
+import { transformProjection } from 'src/utils/openLayers.js';
+import { Vector as VectorLayer, VectorImage as VectorImageLayer } from 'ol/layer';
 
-import { useMapStore } from "stores/map";
-import { getAllLocation, getLocation } from "src/api/location";
+import { useMapStore } from 'stores/map';
+import { getAllLocation, getLocation } from 'src/api/location';
 export default defineComponent({
-  name: "FloatSearch",
+  name: 'FloatSearch',
   setup() {
     const $q = useQuasar();
     const $t = i18n.global.t;
-    const map = inject("map", {});
+    const map = inject('map', {});
     const mapStore = useMapStore();
     const projections = computed(() => mapStore.getProjections);
     const locationSearchRef = ref(null);
-    const searchLocation = ref("");
+    const searchLocation = ref('');
     const options = ref([]);
     const defaultOptions = ref([]);
-    const filterFn = (val, update, abort) => {
+    const filterFn = (val, update) => {
       if (val.length < 2) {
         // abort();
         update(async () => {
@@ -72,7 +84,7 @@ export default defineComponent({
       } else {
         update(async () => {
           const query = {
-            search: val,
+            search: val
           };
           const response = await getAllLocation(query);
           options.value = response.data;
@@ -80,44 +92,43 @@ export default defineComponent({
       }
     };
     const location = ref(null);
-    const onClearSearch = () => { };
+    const onClearSearch = () => {};
     const setModel = async (val) => {
       if (val) {
         location.value = await getLocation({ id: val.id });
         mapStore.setLocation({
           location: unref(location),
-          resolve: setView,
+          resolve: setView
         });
       }
       unref(locationSearchRef).blur();
     };
-    const setView =  async () => {
+    const setView = async () => {
+      console.log(location.value.view);
       if (unref(location).view) {
-        const { longitude, latitude, extent, zoom, maxZoom } =
-          unref(location).view;
+        const { longitude, latitude, extent, zoom, maxZoom } = unref(location).view;
         if (unref(location).view.projection) {
-          const { name: projectionName, definition: projectionDef } =
-            unref(location).view.projection;
+          const { name: projectionName, definition: projectionDef } = unref(location).view.projection;
           if (!unref(projections).hasOwnProperty(projectionName)) {
-            await fromEPSGCode(projectionName)
+            await fromEPSGCode(projectionName);
             mapStore.setProjection({
               projection: {
-                [projectionName]: projectionDef,
+                [projectionName]: projectionDef
               }
             });
           }
           const center = await transformProjection({
             to: projectionName,
             definition: projectionDef,
-            coordinates: [longitude, latitude],
+            coordinates: [longitude, latitude]
           });
-          const newExtent = transformExtent(JSON.parse(extent), 'EPSG:4326', projectionName)
+          const newExtent = transformExtent(JSON.parse(extent), 'EPSG:4326', projectionName);
           const newView = new View({
             projection: projectionName,
             center,
             extent: JSON.parse(extent),
             zoom,
-            maxZoom,
+            maxZoom
           });
           mapRemoveLayer(newView);
           unref(map).setView(newView);
@@ -128,17 +139,17 @@ export default defineComponent({
     const backToWorldMap = () => {
       const newView = new View({
         zoom: 0,
-        center: [0, 0],
+        center: [0, 0]
       });
       mapRemoveLayer(newView);
       unref(map).setView(newView);
       mapStore.setLocation({
-        location: {},
+        location: {}
       });
-      $bus.emit("on-update-geolocation");
-      $bus.emit("on-delete-draw");
-      $bus.emit("remove-all-files");
-    }
+      $bus.emit('on-update-geolocation');
+      $bus.emit('on-delete-draw');
+      $bus.emit('remove-all-files');
+    };
     const mapRemoveLayer = (newView) => {
       const oldProjection = unref(map).getView().getProjection();
       unref(map)
@@ -157,11 +168,11 @@ export default defineComponent({
             unref(map).removeLayer(layer);
           }
         });
-    }
+    };
     onMounted(() => {
       const query = {
         page: 1,
-        per_page: 10,
+        per_page: 10
       };
       getAllLocation(query).then((response) => {
         defaultOptions.value = response.data;
@@ -169,7 +180,7 @@ export default defineComponent({
     });
     onUnmounted(() => {
       mapStore.setLocation({
-        location: {},
+        location: {}
       });
     });
     return {
@@ -179,9 +190,9 @@ export default defineComponent({
       options,
       filterFn,
       setModel,
-      backToWorldMap,
+      backToWorldMap
     };
-  },
+  }
 });
 </script>
 <style lang="scss" scoped>

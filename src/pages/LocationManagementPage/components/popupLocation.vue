@@ -14,26 +14,9 @@
     v-slot="scope"
   >
     <q-input v-model="scope.value.name" dense autofocus :label="$t('Name')" />
-    <q-input
-      v-model="scope.value.description"
-      dense
-      autofocus
-      :label="$t('Description')"
-    />
-    <q-input
-      v-model="scope.value.view.longitude"
-      type="number"
-      dense
-      autofocus
-      :label="$t('Longitude')"
-    />
-    <q-input
-      v-model="scope.value.view.latitude"
-      type="number"
-      dense
-      autofocus
-      :label="$t('Latitude')"
-    />
+    <q-input v-model="scope.value.description" dense autofocus :label="$t('Description')" />
+    <q-input v-model="scope.value.view.longitude" type="number" dense autofocus :label="$t('Longitude')" />
+    <q-input v-model="scope.value.view.latitude" type="number" dense autofocus :label="$t('Latitude')" />
     <q-select
       v-model="scope.value.workspace"
       dense
@@ -54,31 +37,24 @@
 </template>
 
 <script>
-import {
-  defineComponent,
-  ref,
-  unref,
-  getCurrentInstance,
-  onMounted,
-  computed,
-} from "vue";
-import { useQuasar } from "quasar";
-import { i18n } from "boot/i18n.js";
-import { transformExtent, get as getProj } from "ol/proj";
+import { defineComponent, ref, unref, getCurrentInstance, onMounted, computed } from 'vue';
+import { useQuasar } from 'quasar';
+import { i18n } from 'boot/i18n.js';
+import { transformExtent, get as getProj } from 'ol/proj';
 import { getWidth } from 'ol/extent';
 
-import proj4 from "proj4";
-import { register } from "ol/proj/proj4";
+import proj4 from 'proj4';
+import { register } from 'ol/proj/proj4';
 
-import { transformProjection } from "src/utils/openLayers.js";
-import { updateLocation, addLocaction } from "src/api/location";
+import { transformProjection } from 'src/utils/openLayers.js';
+import { updateLocation, addLocaction } from 'src/api/location';
 export default defineComponent({
-  name: "PopupLocation",
+  name: 'PopupLocation',
   props: {
     row: Object,
     locationRows: Array,
     projections: Array,
-    workspaces: Array,
+    workspaces: Array
   },
   setup(props, { emit }) {
     const vm = getCurrentInstance().proxy;
@@ -86,27 +62,23 @@ export default defineComponent({
     const $t = i18n.global.t;
     const computedRow = ref(props.row);
     const title = computed(() => {
-      return props.row.id
-        ? `${$t("Update location")}: ${unref(computedRow).name}`
-        : `${$t("Add location")}:`;
+      return props.row.id ? `${$t('Update location')}: ${unref(computedRow).name}` : `${$t('Add location')}:`;
     });
     const saveEdit = async (value, _props) => {
       const updateParams = {
         id: value.id,
-        view: {},
+        view: {}
       };
       if (value.name !== _props.name) updateParams.name = value.name;
-      if (value.description !== _props.description)
-        updateParams.description = value.description;
-      if (value.workspace !== _props.workspace)
-        updateParams.workspace = value.workspace;
+      if (value.description !== _props.description) updateParams.description = value.description;
+      if (value.workspace !== _props.workspace) updateParams.workspace = value.workspace;
       if (value.view?.latitude !== _props.view.latitude) {
         Object.assign(updateParams, {
           ...updateParams,
           view: {
             ...updateParams.view,
-            latitude: value.view?.latitude,
-          },
+            latitude: value.view?.latitude
+          }
         });
       }
       updateParams.view.latitude = value.view.latitude;
@@ -115,8 +87,8 @@ export default defineComponent({
           ...updateParams,
           view: {
             ...updateParams.view,
-            longitude: value.view?.longitude,
-          },
+            longitude: value.view?.longitude
+          }
         });
       }
       if (value.view?.projection !== _props.view.projection) {
@@ -124,18 +96,18 @@ export default defineComponent({
           ...updateParams,
           view: {
             ...updateParams.view,
-            projection: value.view.projection,
-          },
+            projection: value.view.projection
+          }
         });
       }
-      
+
       const longLat = transformProjection({
-        to: _props.view?.projection?.name || "EPSG:4326",
-        definition: _props.view?.projection?.definition || "",
+        to: _props.view?.projection?.name || 'EPSG:4326',
+        definition: _props.view?.projection?.definition || '',
         coordinates: [
           parseFloat(value.view?.longitude || _props.view.longitude),
-          parseFloat(value.view?.latitude || _props.view.latitude),
-        ],
+          parseFloat(value.view?.latitude || _props.view.latitude)
+        ]
       });
 
       Object.assign(updateParams, {
@@ -146,15 +118,13 @@ export default defineComponent({
             longLat[0] - 54000, // min lat
             longLat[1] - 30000, // min long
             longLat[0] + 50000, // max lat
-            longLat[1] + 30000, // min long
-          ]),
-        },
+            longLat[1] + 30000 // min long
+          ])
+        }
       });
       if (updateParams.id) {
         const response = await updateLocation(updateParams);
-        const currentRow = props.locationRows.find(
-          (row) => row.id === response.id
-        );
+        const currentRow = props.locationRows.find((row) => row.id === response.id);
         Object.assign(currentRow, { ...response });
         return;
       } else {
@@ -169,9 +139,9 @@ export default defineComponent({
       computedRow,
       title,
       saveEdit,
-      updateModel,
+      updateModel
     };
-  },
+  }
 });
 </script>
 <style lang="scss">

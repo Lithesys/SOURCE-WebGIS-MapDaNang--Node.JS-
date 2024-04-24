@@ -94,7 +94,6 @@ export default defineComponent({
         console.log('Already have user');
         return;
       }
-
       const response = await store.registerUser({
         email: unref(username),
         password: unref(password)

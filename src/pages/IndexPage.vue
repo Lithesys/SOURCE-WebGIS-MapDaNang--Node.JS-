@@ -34,7 +34,7 @@ import { toStringHDMS } from 'ol/coordinate';
 import { Fill, Stroke, Style } from 'ol/style';
 import { writeGeoJSON } from 'src/utils/openLayers';
 import GeoJSON from 'ol/format/GeoJSON';
-import { OSM } from 'ol/source';
+import { OSM, TileWMS } from 'ol/source';
 import {
   Tile as TileLayer,
   Vector as VectorLayer,
@@ -380,6 +380,56 @@ export default defineComponent({
                   });
               }
             }
+            if (layer instanceof TileLayer) {
+              const source = layer.getSource();
+              if (source instanceof TileWMS) {
+                const url = source.getGetFeatureInfoUrl(
+                  evt.coordinate,
+                  unref(map).getView().getResolution(),
+                  'EPSG:4326',
+                  {
+                    INFO_FORMAT: 'application/json',
+                    FEATURE_COUNT: 50
+                  }
+                );
+
+                if (url) {
+                  fetch(url)
+                    .then((response) => response.text())
+                    .then((html) => {
+                      const features = new GeoJSON().readFeatures(html);
+                      if (features.length) {
+                        const isSelected = unref(layerForImage).getSource().getFeatures();
+                        if (isSelected.some((f) => f?.getId?.() === features[0].getId?.())) {
+                          actionClosePopup();
+                          return;
+                        }
+                        unref(layerForImage).url = layer.url;
+                        unref(layerForImage).getSource().clear();
+                        unref(layerForImage).getSource().addFeatures(features);
+                        mapStore.setSelectedFeature({
+                          layer,
+                          feature: features[0]
+                        });
+                        unref(map)
+                          .getView()
+                          .fit(features[0].getGeometry().getExtent(), {
+                            duration: 600,
+                            padding: [100, 100, 100, 100]
+                          });
+                        if (features[0].getId?.()) getFeatureAPI(features[0]);
+                        setTimeout(() => {
+                          captureScreenshot().then((response) => {
+                            floatDetailProps.value.image = response;
+                          });
+                        }, 1500);
+                      } else {
+                        actionClosePopup();
+                      }
+                    });
+                }
+              }
+            }
           });
       });
     };
@@ -393,14 +443,16 @@ export default defineComponent({
     provide('map', map);
     const view = ref(
       new View({
-        zoom: 12,
-        center: [108, 16],
+        zoom: 2,
+        center: [0, 0],
         extent: [-20037508.34, -20037508.34, 20037508.34, 20037508.34]
       })
     );
+
     onMounted(() => {
       addOverlay();
-      const daNangCoordinates = transform([108.2022, 16.0595], 'EPSG:4326', 'EPSG:3857');
+      // const daNangCoordinates = transform([108.2022, 16.0595], 'EPSG:4326', 'EPSG:3857');
+      const daNangCoordinates = transform([0, 0], 'EPSG:4326', 'EPSG:3857');
       map.value = new Map({
         target: vm.$refs['mapRoot'],
         controls: [scaleControl],
@@ -412,7 +464,7 @@ export default defineComponent({
         ],
         view: new View({
           center: daNangCoordinates,
-          zoom: 13
+          zoom: 2
         })
       });
       initPopupEvent();

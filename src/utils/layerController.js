@@ -1,12 +1,11 @@
-import {Fill, Stroke, Style, Circle as CircleStyle} from "ol/style";
-import VectorSource from "ol/source/Vector";
-import {Vector as VectorLayer} from "ol/layer";
+import { Fill, Stroke, Style, Circle as CircleStyle } from 'ol/style';
+import VectorSource from 'ol/source/Vector';
+import { Vector as VectorLayer } from 'ol/layer';
 // geolocation
-import Geolocation from "ol/Geolocation";
-import Feature from "ol/Feature";
-import Point from "ol/geom/Point";
-import { transform } from "ol/proj";
-
+import Geolocation from 'ol/Geolocation';
+import Feature from 'ol/Feature';
+import Point from 'ol/geom/Point';
+import { transform } from 'ol/proj';
 
 export class LayerController {
   constructor(option = {}) {
@@ -27,20 +26,23 @@ export class LayerController {
     }
   }
 
-  findFeatureByGPS(long, lat, fromProj = "EPSG:4326", desProj = "EPSG:5899") {
+  findFeatureByGPS(long, lat, fromProj = 'EPSG:4326', desProj = 'EPSG:5899') {
     let layerPolygon = this.getLayerPolygon();
     if (!layerPolygon) return;
-    const point = new Point([lat,long]);
+    const point = new Point([lat, long]);
     point.transform(fromProj, desProj);
-    layerPolygon.getSource().getFeatures().forEach((feature) => {
-      if (feature.getGeometry().intersectsCoordinate(point.getCoordinates())) {
-        return feature;
-      }
-    })
+    layerPolygon
+      .getSource()
+      .getFeatures()
+      .forEach((feature) => {
+        if (feature.getGeometry().intersectsCoordinate(point.getCoordinates())) {
+          return feature;
+        }
+      });
   }
 
   getLayerPolygon() {
-    return this.layers["danang:polygon"];
+    return this.layers['danang:polygon'];
   }
 
   /**
@@ -61,4 +63,4 @@ export class LayerController {
   }
 }
 
-export default LayerController
+export default LayerController;

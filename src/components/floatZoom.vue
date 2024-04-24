@@ -57,6 +57,7 @@ import { useQuasar } from 'quasar';
 import { i18n } from 'boot/i18n.js';
 import { OSM, ImageWMS, XYZ } from 'ol/source';
 import { Tile as TileLayer, Image, Vector as VectorLayer, Group } from 'ol/layer';
+import { list } from 'postcss';
 
 export default defineComponent({
   name: 'FloatZoom',
@@ -74,6 +75,7 @@ export default defineComponent({
           duration: 250
         });
     };
+
     const layerGroups = ref([
       {
         icon: 'img:icons/Maps-Street.png',
@@ -91,24 +93,24 @@ export default defineComponent({
         tooltip: $t('Tree map')
       }
     ]);
-    const wmsSource = new ImageWMS({
-      url: `${process.env.GEO_SERVER_URL}/ne/wms`,
-      params: {
-        LAYERS: 'ne:world',
-        FORMAT: 'image/png' // Specify the desired image format
-      },
-      serverType: 'geoserver'
-    });
-    const worldImagery = new TileLayer({
+
+    const world = new TileLayer({
       source: new XYZ({
         url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         crossOrigin: 'Anonymous',
-        maxZoom: 19
+        maxZoom: 25
       })
     });
     // Create a new Image layer
-    const imageLayer = new Image({
-      source: wmsSource
+    const tree = new Image({
+      source: new ImageWMS({
+        url: `${process.env.GEO_SERVER_URL}/tiger/wms`,
+        params: {
+          LAYERS: 'tiger:tiger_roads',
+          FORMAT: 'image/png'
+        },
+        serverType: 'geoserver'
+      })
     });
 
     const groupOSM = (list) =>
@@ -123,14 +125,30 @@ export default defineComponent({
 
     const groupImagery = (list) =>
       new Group({
-        layers: [worldImagery, ...list]
+        layers: [
+          new TileLayer({
+            source: new OSM()
+          }),
+          tree,
+          ...list
+        ]
       });
 
+    const groupTree = (list) =>
+      new Group({
+        layers: [
+          new TileLayer({
+            source: new OSM()
+          }),
+          tree,
+          ...list
+        ]
+      });
     const setTile = (type) => {
       const list = unref(map)?.getLayers()?.getArray?.()?.slice?.(1) || [];
       switch (type) {
         case 'groupTree':
-          unref(map).setLayerGroup(groupImagery(list));
+          unref(map).setLayerGroup(groupTree(list));
         case 'groupOSM':
           unref(map).setLayerGroup(groupOSM(list));
           break;
